@@ -10,20 +10,21 @@ import time
 import pandas as pd
 
 
-def glassdoorscraper(path, keyword, num_jobs):
+def glassdoorscraper(path, keyword, num_jobs,pages):
     options = webdriver.ChromeOptions()
     driver = webdriver.Chrome(executable_path=path, options=options)
     driver.set_window_size(1120, 1000)
     url = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword="' + keyword 
     driver.get(url)
     jobinfo=[]
-    
-    while len(jobinfo) < 35:
+    c=0
+    while len(jobinfo) < num_jobs:
+        c+=1
         time.sleep(5)
         job_buttons = driver.find_elements_by_xpath('//*[@id="MainCol"]/div[1]/ul/li[contains(@class,"react")]')  #jl for Job Listing. These are the buttons we're going to click.
         for job_button in job_buttons:  
             #time.sleep(2)
-            if len(jobinfo) < 35:
+            if len(jobinfo) < num_jobs:
                 job_button.click()  #You might 
                 try:
                     driver.find_element_by_css_selector("[alt='Close']").click()  #clicking to the X.
@@ -117,6 +118,12 @@ def glassdoorscraper(path, keyword, num_jobs):
             driver.find_element_by_css_selector("[alt='Close']").click()  #clicking to the X.
         except NoSuchElementException:
             pass
+        if c < pages:
+            driver.find_element_by_xpath('//*[@id="MainCol"]/div[2]/div/div[1]/button[contains(@class,"nextButton")]').click()
+        else:
+            break
+            
+        
     return jobinfo
     
     
