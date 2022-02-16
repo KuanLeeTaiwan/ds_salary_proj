@@ -8,6 +8,10 @@ Created on Fri Feb 11 11:40:38 2022
 import pandas as pd
 import numpy as np
 import glassdoorscraper 
+import spacy
+from collections import Counter
+import matplotlib.pyplot as plt
+import numpy as np
 
 keyword = 'Data Scientist'
 path = "C:/Users/momo8/Documents/ds_salary_proj/chromedriver.exe"
@@ -79,4 +83,38 @@ df['Excel'] = df["Dscrb"].apply(lambda x: 1 if 'excel' in x.lower() else 0)
 df['PowerBI'] = df["Dscrb"].apply(lambda x: 1 if 'powerbi' in x.lower() else 0)
 df['Tableau'] = df["Dscrb"].apply(lambda x: 1 if 'tableau' in x.lower() else 0)
 
-df
+# Finding the top freq in each industry in order to impute the row wtih missing value in Industry column based on the freq in Dscrb 
+nlp = spacy.load('en_core_web_sm')
+def countfrq(text):
+    doc = nlp(text)
+    nouns = [token.text
+             for token in doc
+             if (not token.is_stop and
+                 not token.is_punct and
+                 token.pos_ == "NOUN")]
+    words = [token.text
+         for token in doc
+         if not token.is_stop and not token.is_punct]
+    noun_freq = Counter(nouns)
+    common_nouns = noun_freq.most_common(5)
+    word_freq = Counter(words)
+    common_words = word_freq.most_common(5)
+    return (noun_freq)
+
+df['freq'] = df['Dscrb'].apply(lambda x: countfrq(x))
+dfreq = df.groupby('Industry')['Dscrb'].sum()
+dfreq = pd.DataFrame(dfreq)
+dfreq['as']= d
+
+for x, y in dfreq['as'].items():
+    a, b =zip(*sorted(list(y.items()),key=lambda a: a[1],reverse=True))
+    #a, b = zip(*y.items())
+    print(a,b)
+    indexes = np.arange(len(a))
+    width = 0.3
+    plt.bar(indexes, b, width)
+    plt.xticks(indexes + width * 0.5, a,rotation = 90)
+    plt.title(x)
+    plt.show()
+
+
