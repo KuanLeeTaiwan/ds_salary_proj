@@ -66,9 +66,8 @@ def Size(x):
 df['Salary'] = df['Salary'].apply(lambda x: SalaryTrans(x) )
 df.dropna(subset=['Salary'],inplace=True)
 #average working hours a week is 40 hrs, sorucing from google
- 
+df['Seniority']= df['Title'].apply(lambda x: seniority(x)) 
 df['Title'] = df['Title'].apply(lambda x: TitleTran(x))   
-df['Seniority']= df['Title'].apply(lambda x: seniority(x))
 df['Location'] = df['Location'].apply(lambda x: x.split(',')[1] if x != 'Remote' else 'Remote')
 df['Size'] = df['Size'].apply(lambda x : Size(x))
 df['Revenue'] = df['Revenue'].replace('$','').apply(lambda x: 'NoRevenue' if x[0]=="U" else x)
@@ -83,38 +82,26 @@ df['Excel'] = df["Dscrb"].apply(lambda x: 1 if 'excel' in x.lower() else 0)
 df['PowerBI'] = df["Dscrb"].apply(lambda x: 1 if 'powerbi' in x.lower() else 0)
 df['Tableau'] = df["Dscrb"].apply(lambda x: 1 if 'tableau' in x.lower() else 0)
 
-# Finding the top freq in each industry in order to impute the row wtih missing value in Industry column based on the freq in Dscrb 
+#  impute the row wtih missing value in Industry column based on the freq in Dscrb 
 nlp = spacy.load('en_core_web_sm')
-def countfrq(text):
-    doc = nlp(text)
-    nouns = [token.text
-             for token in doc
-             if (not token.is_stop and
-                 not token.is_punct and
-                 token.pos_ == "NOUN")]
-    words = [token.text
-         for token in doc
-         if not token.is_stop and not token.is_punct]
-    noun_freq = Counter(nouns)
-    common_nouns = noun_freq.most_common(5)
-    word_freq = Counter(words)
-    common_words = word_freq.most_common(5)
-    return (noun_freq)
-
-df['freq'] = df['Dscrb'].apply(lambda x: countfrq(x))
 dfreq = df.groupby('Industry')['Dscrb'].sum()
-dfreq = pd.DataFrame(dfreq)
-dfreq['as']= d
+dfreq =pd.DataFrame(dfreq)
+dfreq = dfreq.drop('NoIndustry')
+dfreq = dfreq.reset_index()
 
-for x, y in dfreq['as'].items():
-    a, b =zip(*sorted(list(y.items()),key=lambda a: a[1],reverse=True))
-    #a, b = zip(*y.items())
-    print(a,b)
-    indexes = np.arange(len(a))
-    width = 0.3
-    plt.bar(indexes, b, width)
-    plt.xticks(indexes + width * 0.5, a,rotation = 90)
-    plt.title(x)
-    plt.show()
+dfmissingindustry = df[df['Industry']=='NoIndustry']
+ImputeList = []
+for i in range(len(dfmissingindustry)):
+    search_doc = nlp(dfmissingindustry['Dscrb'].iloc[i])
+    A=[]
+    for j in range(len(dfreq)):
+        main_doc = nlp(dfreq['Dscrb'].iloc[j])      
+        A.append((i,dfreq.iloc[j,0],main_doc.similarity(search_doc)))
+    ImputeList.append(sorted(A, key=lambda tup: tup[1],reverse=True)[0])
+dfmissingindustry.reset_index(inplace=True)
+dffilling = pd.DataFrame([x[1] for x in ImputeList])
+dffilling= pd.merge(dfmissingindustry,dffilling,left_index=True,right_index=True)
+dffilling = dffilling.set_index(keys='index').drop(columns='Industry').rename(columns={0:'Industry'})
+dfnew = pd.concat([df[df['Industry']!='NoIndustry'],dffilling])
 
-
+# EDA will present on jupyter notebook
