@@ -11,7 +11,7 @@ import glassdoorscraper
 import spacy
 from collections import Counter
 import matplotlib.pyplot as plt
-import numpy as np
+
 
 keyword = 'Data Scientist'
 path = "C:/Users/momo8/Documents/ds_salary_proj/chromedriver.exe"
@@ -20,6 +20,9 @@ df = pd.DataFrame(df)
 df.to_csv('glassdoor.csv')
 
 df = pd.read_csv('glassdoor.csv',header=0)
+df1 = pd.read_csv('glassdoor1.csv',header=0)
+df = pd.concat([df,df1],axis=0)
+
 df = df.iloc[:,1:]
 df['Salary'] = df['Salary'].replace('$','').apply(lambda x: x.split('/')[0])
 df['Salary'] = df['Salary'].apply(lambda x: x.replace('$','').replace(',',''))
@@ -68,7 +71,7 @@ df.dropna(subset=['Salary'],inplace=True)
 #average working hours a week is 40 hrs, sorucing from google
 df['Seniority']= df['Title'].apply(lambda x: seniority(x)) 
 df['Title'] = df['Title'].apply(lambda x: TitleTran(x))   
-df['Location'] = df['Location'].apply(lambda x: x.split(',')[1] if x != 'Remote' else 'Remote')
+df['Location'] = df['Location'].apply(lambda x: x.split(',')[0] if x != 'Remote' else 'Remote')
 df['Size'] = df['Size'].apply(lambda x : Size(x))
 df['Revenue'] = df['Revenue'].replace('$','').apply(lambda x: 'NoRevenue' if x[0]=="U" else x)
 
@@ -102,6 +105,9 @@ dfmissingindustry.reset_index(inplace=True)
 dffilling = pd.DataFrame([x[1] for x in ImputeList])
 dffilling= pd.merge(dfmissingindustry,dffilling,left_index=True,right_index=True)
 dffilling = dffilling.set_index(keys='index').drop(columns='Industry').rename(columns={0:'Industry'})
-dfnew = pd.concat([df[df['Industry']!='NoIndustry'],dffilling])
-
+dfnew = pd.concat([df[df['Industry']!='NoIndustry'
+dfnew['Sector'] = dfnew['Sector'].apply(lambda x: 'Telecommunications Services' if x == "NoSector" else x)                 
+dfnew.to_csv('glassdoorcleaned.csv')                  
+                      
+                      
 # EDA will present on jupyter notebook
