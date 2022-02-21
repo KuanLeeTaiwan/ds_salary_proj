@@ -64,14 +64,29 @@ def Size(x):
         return 'NoSize'
     else:
         return str((int(x.split()[0]) + int(x.split()[2]))/2)
-    
+
+def Location(x):
+    if x == 'Remote':
+        return x
+    elif x == 'NoLocation':
+        return x
+    elif x == 'Maryland':
+        return 'MD'
+    elif x == "Nevada":
+        return "NV"
+    else:
+        try:
+            return x.split(',')[1]
+        except:
+            return 'No'
+
     
 df['Salary'] = df['Salary'].apply(lambda x: SalaryTrans(x) )
 df.dropna(subset=['Salary'],inplace=True)
 #average working hours a week is 40 hrs, sorucing from google
 df['Seniority']= df['Title'].apply(lambda x: seniority(x)) 
 df['Title'] = df['Title'].apply(lambda x: TitleTran(x))   
-df['Location'] = df['Location'].apply(lambda x: x.split(',')[0] if x != 'Remote' else 'Remote')
+df['Location'] = df['Location'].apply(lambda x: Location(x))
 df['Size'] = df['Size'].apply(lambda x : Size(x))
 df['Revenue'] = df['Revenue'].replace('$','').apply(lambda x: 'NoRevenue' if x[0]=="U" else x)
 
