@@ -1,5 +1,3 @@
 # Ds_salary_proj
-* Created function in glassdoorscraper.py 
-* Imported the function to get the data from glassdoor and exported to glasssdoor.csv
-* Manipulated and cleaned the data in Salaryproject.py
-* Utilied spacy to count the frequency in each industry in Salaryproject.py
+
+https://medium.com/@kuan.lee.taiwan/the-salary-prediction-of-data-scientists-7d71d24ab4a3
